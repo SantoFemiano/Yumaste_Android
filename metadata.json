@@ -1,0 +1,6 @@
+{
+  "name": "Yumaste",
+  "description": "App client per i clienti del servizio di ristorazione Yumaste. Ordina Box meal preparati da Chef professionisti, ricevi raccomandazioni nutrizionali personalizzate tramite IA, gestisci il carrello e segui lo stato dei tuoi ordini.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
