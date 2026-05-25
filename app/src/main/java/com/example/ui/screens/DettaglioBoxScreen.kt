@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -58,7 +59,8 @@ fun DettaglioBoxScreen(
                 Surface(
                     tonalElevation = 8.dp,
                     shadowElevation = 8.dp,
-                    color = MaterialTheme.colorScheme.surface,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.72f),
+                    border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f)),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
@@ -151,6 +153,7 @@ fun DettaglioBoxScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
+                    .background(EarthyBackgroundGradient)
                     .padding(innerPadding)
                     .verticalScroll(scrollState)
             ) {
@@ -324,12 +327,32 @@ fun DettaglioBoxScreen(
 
 @Composable
 fun NutritionHubLayout(macros: MacroTotali) {
+    var triggerAnimate by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        triggerAnimate = true
+    }
+
+    val proteinProgress by animateFloatAsState(
+        targetValue = if (triggerAnimate) (macros.proteine / 100.0).coerceIn(0.0, 1.0).toFloat() else 0f,
+        animationSpec = tween(durationMillis = 1000, easing = EaseInOutCubic)
+    )
+
+    val carbProgress by animateFloatAsState(
+        targetValue = if (triggerAnimate) (macros.carboidrati / 200.0).coerceIn(0.0, 1.0).toFloat() else 0f,
+        animationSpec = tween(durationMillis = 1000, easing = EaseInOutCubic)
+    )
+
+    val fatProgress by animateFloatAsState(
+        targetValue = if (triggerAnimate) (macros.grassi / 100.0).coerceIn(0.0, 1.0).toFloat() else 0f,
+        animationSpec = tween(durationMillis = 1000, easing = EaseInOutCubic)
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("nutrition_hub"),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, BorderSlateSoft)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // Calories Indicator Banner
@@ -352,7 +375,7 @@ fun NutritionHubLayout(macros: MacroTotali) {
             Text("Proteine: ${macros.proteine}g", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
             LinearProgressIndicator(
-                progress = (macros.proteine / 100.0).coerceIn(0.0, 1.0).toFloat(),
+                progress = proteinProgress,
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
                 color = Color(0xFFEF4444), // Red proteins
                 trackColor = BorderSlateSoft
@@ -362,7 +385,7 @@ fun NutritionHubLayout(macros: MacroTotali) {
             Text("Carboidrati: ${macros.carboidrati}g", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
             LinearProgressIndicator(
-                progress = (macros.carboidrati / 200.0).coerceIn(0.0, 1.0).toFloat(),
+                progress = carbProgress,
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
                 color = Color(0xFFFBBF24), // Yellow carbs
                 trackColor = BorderSlateSoft
@@ -372,7 +395,7 @@ fun NutritionHubLayout(macros: MacroTotali) {
             Text("Grassi: ${macros.grassi}g", fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(4.dp))
             LinearProgressIndicator(
-                progress = (macros.grassi / 100.0).coerceIn(0.0, 1.0).toFloat(),
+                progress = fatProgress,
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
                 color = Color(0xFF10B981), // Green lipids
                 trackColor = BorderSlateSoft

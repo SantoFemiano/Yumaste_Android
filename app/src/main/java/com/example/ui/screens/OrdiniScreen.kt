@@ -47,13 +47,14 @@ fun OrdiniScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundSlate)
+            .background(EarthyBackgroundGradient)
     ) {
         // Screen Top Menu Navigation
         Surface(
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 4.dp,
-            shadowElevation = 2.dp
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+            tonalElevation = 6.dp,
+            shadowElevation = 3.dp,
+            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
         ) {
             Row(
                 modifier = Modifier
@@ -156,8 +157,8 @@ fun OrderRowCard(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("order_card_${order.id}"),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, BorderSlateSoft),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f)),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {

@@ -6,6 +6,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -20,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -29,6 +32,8 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.*
+import androidx.compose.ui.graphics.Brush
 import coil.compose.AsyncImage
 import com.example.data.model.BoxCatalogo
 import com.example.ui.theme.*
@@ -66,13 +71,14 @@ fun CatalogScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundSlate)
+            .background(EarthyBackgroundGradient)
     ) {
         // --- 1. SUPERB TOP HEADER ---
         Surface(
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 4.dp,
-            shadowElevation = 2.dp
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+            tonalElevation = 6.dp,
+            shadowElevation = 3.dp,
+            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
         ) {
             Column(
                 modifier = Modifier
@@ -197,59 +203,69 @@ fun CatalogScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 12.dp)
+                        .clickable { showAiChefQuiz = true }
                         .testTag("ai_chef_banner"),
-                    colors = CardDefaults.cardColors(containerColor = PrimaryIndigo)
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = PrimaryIndigo.copy(alpha = 0.08f)),
+                    border = BorderStroke(1.dp, PrimaryIndigo.copy(alpha = 0.25f))
                 ) {
-                    Column(
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp)
+                            .padding(horizontal = 14.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.AutoAwesome,
-                                contentDescription = "AI Icon",
-                                tint = AccentCoral
-                            )
-                            Text(
-                                "Non sai cosa scegliere? Chef AI",
-                                color = BackgroundSlate,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(32.dp)
+                                    .background(PrimaryIndigo.copy(alpha = 0.15f), RoundedCornerShape(8.dp)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.AutoAwesome,
+                                    contentDescription = "AI",
+                                    tint = AccentCoral,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                            Column {
+                                Text(
+                                    text = "Chef AI Yumaste ✨",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.sp,
+                                    color = TextSlateDark
+                                )
+                                Text(
+                                    text = "Trova subito la tua Box nutrizionale ideale",
+                                    fontSize = 11.sp,
+                                    color = TextSlateMedium
+                                )
+                            }
                         }
-                        Text(
-                            "Dicci i tuoi obiettivi nutrizionali e intolleranze. L'intelligenza Yumaste indicherà la Box più bilanciata per te.",
-                            color = BackgroundSlate.copy(alpha = 0.85f),
-                            fontSize = 12.sp,
-                            modifier = Modifier.padding(vertical = 8.dp)
+                        
+                        Icon(
+                            imageVector = Icons.Default.ChevronRight,
+                            contentDescription = "Apri",
+                            tint = PrimaryIndigo,
+                            modifier = Modifier.size(20.dp)
                         )
-                        Button(
-                            modifier = Modifier
-                                .align(Alignment.End)
-                                .testTag("toggle_ai_chef_button"),
-                            onClick = { showAiChefQuiz = !showAiChefQuiz },
-                            colors = ButtonDefaults.buttonColors(containerColor = BackgroundSlate, contentColor = PrimaryIndigo),
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
-                        ) {
-                            Text(
-                                text = if (showAiChefQuiz) "Chiudi Assistente" else "Chiedi all'IA",
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                        }
+                    }
+                }
 
-                        // Collapsible Form Section
-                        AnimatedVisibility(visible = showAiChefQuiz) {
-                            SmartChefForm(
-                                viewModel = viewModel,
-                                onNavigateToBoxDetail = onNavigateToBoxDetail,
-                                onClose = { showAiChefQuiz = false }
-                            )
-                        }
+                if (showAiChefQuiz) {
+                    androidx.compose.ui.window.Dialog(
+                        onDismissRequest = { showAiChefQuiz = false }
+                    ) {
+                        SmartChefForm(
+                            viewModel = viewModel,
+                            onNavigateToBoxDetail = onNavigateToBoxDetail,
+                            onClose = { showAiChefQuiz = false }
+                        )
                     }
                 }
             }
@@ -390,14 +406,34 @@ fun MealBoxCard(
     onCardClicked: () -> Unit,
     onAddToCartClicked: () -> Unit
 ) {
+    var isVisible by remember { mutableStateOf(false) }
+    LaunchedEffect(key1 = box.id) {
+        isVisible = true
+    }
+
+    val animatedAlpha by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0f,
+        animationSpec = tween(durationMillis = 400, delayMillis = (box.id % 4) * 40, easing = EaseOutQuad)
+    )
+    val animatedScale by animateFloatAsState(
+        targetValue = if (isVisible) 1f else 0.94f,
+        animationSpec = spring(dampingRatio = Spring.DampingRatioLowBouncy, stiffness = Spring.StiffnessLow)
+    )
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .height(262.dp)
+            .graphicsLayer(
+                alpha = animatedAlpha,
+                scaleX = animatedScale,
+                scaleY = animatedScale
+            )
             .clickable { onCardClicked() }
             .testTag("box_card_${box.id}"),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -522,19 +558,38 @@ fun MealBoxCard(
                         }
                     }
 
+                    var buttonScale by remember { mutableStateOf(1f) }
+                    val animatedButtonScale by animateFloatAsState(
+                        targetValue = buttonScale,
+                        animationSpec = spring(dampingRatio = Spring.DampingRatioHighBouncy, stiffness = Spring.StiffnessMedium)
+                    )
+                    LaunchedEffect(buttonScale) {
+                        if (buttonScale > 1f) {
+                            kotlinx.coroutines.delay(120)
+                            buttonScale = 1f
+                        }
+                    }
+
                     Box(
                         modifier = Modifier
                             .size(36.dp)
+                            .graphicsLayer(
+                                scaleX = animatedButtonScale,
+                                scaleY = animatedButtonScale
+                            )
                             .clip(RoundedCornerShape(8.dp))
                             .background(PrimaryIndigo)
-                            .clickable { onAddToCartClicked() }
+                            .clickable {
+                                buttonScale = 1.3f
+                                onAddToCartClicked()
+                            }
                             .testTag("add_box_btn_${box.id}"),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = "Aggiungi al carrello",
-                            tint = Color.White,
+                            tint = BackgroundSlate,
                             modifier = Modifier.size(20.dp)
                         )
                     }
@@ -563,9 +618,9 @@ fun SmartChefForm(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 12.dp)
+            .padding(16.dp)
             .testTag("smart_chef_card"),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = SurfaceWhite.copy(alpha = 0.98f)),
         border = BorderStroke(1.dp, BorderSlateSoft)
     ) {
         Column(
@@ -573,137 +628,279 @@ fun SmartChefForm(
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(
-                "Yumaste Nutrizionista Virtuale",
-                fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = TextSlateDark
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-            if (result == null) {
-                // Goal Goal Objectives
-                Text("Il tuo obiettivo", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSlateMedium)
-                listOf("Mangiare sano", "Dimagrimento", "Massa muscolare").forEach { goal ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { obiettivo = goal }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = obiettivo == goal,
-                            onClick = { obiettivo = goal },
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(goal, fontSize = 13.sp)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Diet preferences
-                Text("Stile alimentare", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSlateMedium)
-                listOf("Omnivora", "Vegetariana", "Vegana").forEach { style ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { tipoDieta = style }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        RadioButton(
-                            selected = tipoDieta == style,
-                            onClick = { tipoDieta = style },
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(style, fontSize = 13.sp)
-                    }
-                }
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Kcal values
-                Text("Target Calorie Giornaliere: $calorie kcal", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSlateMedium)
-                Slider(
-                    value = calorie.toFloat(),
-                    onValueChange = { calorie = it.toInt() },
-                    valueRange = 1000f..4000f,
-                    steps = 30
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Allergens
-                Text("Allergeni da evitare", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextSlateMedium)
-                OutlinedTextField(
-                    value = allergeni,
-                    onValueChange = { allergeni = it },
-                    placeholder = { Text("es: Glutine, Lattosio (separati da virgola)", fontSize = 12.sp) },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag("submit_ai_recommend_button"),
-                    enabled = !isLoading,
-                    onClick = {
-                        val array = allergeni.split(",")
-                            .map { it.trim() }
-                            .filter { it.isNotEmpty() }
-                        viewModel.requestAiRecommend(obiettivo, tipoDieta, calorie, array)
-                    }
+            // Elegant Header Row with close icon button
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (isLoading) {
-                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
-                    } else {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Icon(Icons.Default.Flare, "Dust Icon")
-                            Text("Trova la Box ideale", fontWeight = FontWeight.Bold)
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = "AI",
+                        tint = AccentCoral,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Text(
+                        "Chef AI Yumaste",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        color = TextSlateDark
+                    )
+                }
+                IconButton(
+                    onClick = onClose,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Chiudi",
+                        tint = TextSlateLight,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+            }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 480.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                if (result == null) {
+                    // 1. Goal segmented pill card Row
+                    Text("Il tuo obiettivo", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryIndigo)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val goals = listOf(
+                            "Benessere" to "Mangiare sano",
+                            "Dimagrire" to "Dimagrimento",
+                            "Massa" to "Massa muscolare"
+                        )
+                        goals.forEach { (label, value) ->
+                            val isSelected = obiettivo == value
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) PrimaryIndigo.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.03f))
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSelected) PrimaryIndigo else Color.White.copy(alpha = 0.08f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { obiettivo = value }
+                                    .padding(vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = label,
+                                    fontSize = 12.sp,
+                                    color = if (isSelected) PrimaryIndigo else TextSlateMedium,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
                         }
                     }
-                }
-            } else {
-                // Show AI Chef recommendations
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Box(
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 2. Diet preference segmented pill card Row
+                    Text("Stile alimentare", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryIndigo)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val styles = listOf("Omnivora", "Vegetariana", "Vegana")
+                        styles.forEach { style ->
+                            val isSelected = tipoDieta == style
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSelected) PrimaryIndigo.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.03f))
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (isSelected) PrimaryIndigo else Color.White.copy(alpha = 0.08f),
+                                        shape = RoundedCornerShape(8.dp)
+                                    )
+                                    .clickable { tipoDieta = style }
+                                    .padding(vertical = 10.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = style,
+                                    fontSize = 12.sp,
+                                    color = if (isSelected) PrimaryIndigo else TextSlateMedium,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // 3. calorie target slider
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Kcal Giornaliere", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryIndigo)
+                        Text("$calorie kcal", fontSize = 12.sp, fontWeight = FontWeight.Black, color = AccentCoral)
+                    }
+                    Slider(
+                        value = calorie.toFloat(),
+                        onValueChange = { calorie = it.toInt() },
+                        valueRange = 1000f..4000f,
+                        steps = 30,
+                        colors = SliderDefaults.colors(
+                            thumbColor = PrimaryIndigo,
+                            activeTrackColor = PrimaryIndigo,
+                            inactiveTrackColor = Color.White.copy(alpha = 0.1f)
+                        ),
+                        modifier = Modifier.height(28.dp)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 4. allergens text field & smart touch suggestions tags
+                    Text("Allergeni o intolleranze", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = PrimaryIndigo)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    OutlinedTextField(
+                        value = allergeni,
+                        onValueChange = { allergeni = it },
+                        placeholder = { Text("es: Glutine, Lattosio...", fontSize = 12.sp, color = TextSlateLight) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = PrimaryIndigo,
+                            unfocusedBorderColor = Color.White.copy(alpha = 0.12f),
+                            focusedContainerColor = Color.White.copy(alpha = 0.02f),
+                            unfocusedContainerColor = Color.White.copy(alpha = 0.02f)
+                        ),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    // Dynamic Tag Chips for single-tap insertion
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        val popularAllergens = listOf("Glutine", "Lattosio", "Frutta guscio")
+                        popularAllergens.forEach { allergen ->
+                            val hasAllergen = allergeni.contains(allergen, ignoreCase = true)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (hasAllergen) AccentCoral.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.04f))
+                                    .border(0.5.dp, if (hasAllergen) AccentCoral else Color.White.copy(alpha = 0.1f), RoundedCornerShape(8.dp))
+                                    .clickable {
+                                        val current = allergeni.trim()
+                                        if (hasAllergen) {
+                                            // Split, filter out match, re-join
+                                            val parts = current.split(",")
+                                                .map { it.trim() }
+                                                .filter { !it.equals(allergen, ignoreCase = true) && it.isNotEmpty() }
+                                            allergeni = parts.joinToString(", ")
+                                        } else {
+                                            allergeni = if (current.isEmpty()) allergen else "$current, $allergen"
+                                        }
+                                    }
+                                    .padding(horizontal = 10.dp, vertical = 5.dp)
+                            ) {
+                                Text(
+                                    text = if (hasAllergen) "✓ $allergen" else "+ $allergen",
+                                    fontSize = 11.sp,
+                                    color = if (hasAllergen) AccentCoral else TextSlateMedium
+                                )
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Find Match Button
+                    Button(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(PrimaryIndigo.copy(alpha = 0.06f), shape = RoundedCornerShape(12.dp))
+                            .height(44.dp)
+                            .testTag("submit_ai_recommend_button"),
+                        enabled = !isLoading,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = PrimaryIndigo,
+                            contentColor = BackgroundSlate
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        onClick = {
+                            val array = allergeni.split(",")
+                                .map { it.trim() }
+                                .filter { it.isNotEmpty() }
+                            viewModel.requestAiRecommend(obiettivo, tipoDieta, calorie, array)
+                        }
                     ) {
-                        Text(
-                            text = result?.messaggio ?: "",
-                            fontStyle = FontStyle.Italic,
-                            fontSize = 14.sp,
-                            color = TextSlateDark,
-                            modifier = Modifier.padding(12.dp)
-                        )
+                        if (isLoading) {
+                            CircularProgressIndicator(modifier = Modifier.size(20.dp), color = BackgroundSlate)
+                        } else {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(Icons.Default.Flare, "Sparkle Icon", modifier = Modifier.size(16.dp))
+                                Text("Consigliami la Box ideale", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+                        }
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    if (result?.boxId != null) {
-                        Button(
+                } else {
+                    // Show AI recommendation results in Dialog nicely and clean
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .testTag("go_to_recommended_box_btn"),
-                            onClick = {
-                                result?.boxId?.let { onNavigateToBoxDetail(it) }
-                                onClose()
-                            }
+                                .background(PrimaryIndigo.copy(alpha = 0.06f), shape = RoundedCornerShape(12.dp))
+                                .border(1.dp, PrimaryIndigo.copy(alpha = 0.15f), shape = RoundedCornerShape(12.dp))
                         ) {
-                            Text("Mostrami la box: ${result?.nomeBox}")
+                            Text(
+                                text = result?.messaggio ?: "",
+                                fontStyle = FontStyle.Italic,
+                                fontSize = 13.sp,
+                                color = TextSlateDark,
+                                modifier = Modifier.padding(14.dp)
+                            )
                         }
-                    }
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                    Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(
-                        modifier = Modifier.align(Alignment.CenterHorizontally),
-                        onClick = { viewModel.clearAiResult() }
-                    ) {
-                        Text("Riprova il test")
+                        if (result?.boxId != null) {
+                            Button(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp)
+                                    .testTag("go_to_recommended_box_btn"),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = PrimaryIndigo,
+                                    contentColor = BackgroundSlate
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                onClick = {
+                                    result?.boxId?.let { onNavigateToBoxDetail(it) }
+                                    onClose()
+                                }
+                            ) {
+                                Text("Mostrami la box: ${result?.nomeBox}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                        TextButton(
+                            modifier = Modifier.align(Alignment.CenterHorizontally),
+                            onClick = { viewModel.clearAiResult() }
+                        ) {
+                            Text("Riprova il test", color = AccentCoral, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

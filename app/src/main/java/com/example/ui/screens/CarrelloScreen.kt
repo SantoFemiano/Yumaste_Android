@@ -143,13 +143,14 @@ fun CarrelloScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(BackgroundSlate)
+                .background(EarthyBackgroundGradient)
         ) {
             // Screen Header
             Surface(
-                color = MaterialTheme.colorScheme.surface,
-                tonalElevation = 4.dp,
-                shadowElevation = 2.dp
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+                tonalElevation = 6.dp,
+                shadowElevation = 3.dp,
+                border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
             ) {
                 Row(
                     modifier = Modifier
@@ -255,8 +256,8 @@ fun CarrelloScreen(
 
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        border = BorderStroke(1.dp, BorderSlateSoft),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f))
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             if (addresses.isEmpty() && !showAddAddressForm) {
@@ -486,8 +487,8 @@ fun CartItemRow(
             .fillMaxWidth()
             .padding(vertical = 6.dp)
             .testTag("cart_item_${item.boxId}"),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, BorderSlateSoft)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+        border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
     ) {
         Row(
             modifier = Modifier
@@ -510,7 +511,7 @@ fun CartItemRow(
                     modifier = Modifier
                         .size(68.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(BackgroundSlate),
+                        .background(BorderSlateSoft),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(Icons.Default.Restaurant, "Meal image", tint = TextSlateLight, modifier = Modifier.size(28.dp))

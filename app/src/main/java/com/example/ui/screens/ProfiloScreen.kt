@@ -80,13 +80,14 @@ fun ProfiloScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundSlate)
+            .background(EarthyBackgroundGradient)
     ) {
         // Top Header Title block
         Surface(
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 4.dp,
-            shadowElevation = 2.dp
+            color = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f),
+            tonalElevation = 6.dp,
+            shadowElevation = 3.dp,
+            border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
         ) {
             Row(
                 modifier = Modifier
@@ -160,8 +161,8 @@ fun ProfiloScreen(
                 // --- DATI ACCOUNT DETAILS CARD ---
                 Card(
                     modifier = Modifier.fillMaxWidth().testTag("profile_credentials_card"),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, BorderSlateSoft)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+                    border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -239,8 +240,8 @@ fun ProfiloScreen(
                 // --- CHANGE PASSWORD CARD SECTION ---
                 Card(
                     modifier = Modifier.fillMaxWidth().testTag("profile_security_card"),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, BorderSlateSoft)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+                    border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(
@@ -317,8 +318,8 @@ fun ProfiloScreen(
                 // --- MANAGED SHIPPING ADDRESSES CARD ---
                 Card(
                     modifier = Modifier.fillMaxWidth().testTag("profile_addresses_card"),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    border = BorderStroke(1.dp, BorderSlateSoft)
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+                    border = BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(

@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -23,9 +24,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.theme.BackgroundSlate
-import com.example.ui.theme.PrimaryIndigo
-import com.example.ui.theme.SecondaryViolet
+import com.example.ui.theme.*
 import com.example.ui.viewmodel.YumasteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,11 +45,7 @@ fun LoginScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.verticalGradient(
-                    colors = listOf(SecondaryViolet.copy(alpha = 0.08f), BackgroundSlate)
-                )
-            ),
+            .background(EarthyBackgroundGradient),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -86,7 +81,8 @@ fun LoginScreen(
                     .fillMaxWidth()
                     .testTag("login_card"),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.55f)),
+                border = androidx.compose.foundation.BorderStroke(0.5.dp, Color.White.copy(alpha = 0.08f))
             ) {
                 Column(
                     modifier = Modifier
