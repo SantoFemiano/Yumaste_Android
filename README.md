@@ -1,21 +1,38 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+## 📱 Yumaste Android
 
-# Run and deploy your AI Studio app
+Native Android client for **Yumaste**, a meal-kit e-commerce platform that allows users
+to discover, order, and manage food boxes delivered to their door.
 
-This contains everything you need to run your app locally.
+### 🛠️ Tech Stack
 
-View your app in AI Studio: https://ai.studio/apps/ab34edf3-982e-44f2-9351-c89b6170c2d4
+| Layer | Technology |
+|---|---|
+| Language | Kotlin |
+| UI | Jetpack Compose + Material 3 |
+| Architecture | MVVM (ViewModel + StateFlow) |
+| Navigation | Jetpack Navigation Compose |
+| Networking | Retrofit 2 + OkHttp + Moshi |
+| Local Storage | Room + DataStore Preferences |
+| Image Loading | Coil Compose |
+| Build | Gradle KTS + Secrets Plugin |
+| Testing | Robolectric + Roborazzi |
 
-## Run Locally
+### 📲 Screens
 
-**Prerequisites:**  [Android Studio](https://developer.android.com/studio)
+- **Login / Registrazione** — autenticazione JWT con il backend
+- **Catalogo** — sfoglia le box per categoria con filtri
+- **Dettaglio Box** — ingredienti, valori nutrizionali, descrizione AI
+- **Carrello** — gestione quantità e riepilogo ordine
+- **Ordini** — storico degli ordini effettuati
+- **Profilo** — gestione dati utente e preferenze
 
+### 🔗 Backend
 
-1. Open Android Studio
-2. Select **Open** and choose the directory containing this project
-3. Allow Android Studio to fix any incompatibilities as it imports the project.
-4. Create a file named `.env` in the project directory and set `GEMINI_API_KEY` in that file to your Gemini API key (see `.env.example` for an example)
-5. Remove this line from the app's `build.gradle.kts` file: `signingConfig = signingConfigs.getByName("debugConfig")`
-6. Run the app on an emulator or physical device
+Comunica con [yumaste-backend](https://github.com/SantoFemiano/yumaste-backend)
+(Spring Boot 4 · Java 21 · MySQL · Redis · Kafka).
+
+### ⚙️ Setup
+
+1. Copia `.env.example` in `.env`
+2. Inserisci l'URL del backend: `BASE_URL=https://your-api-url`
+3. Build & Run su Android Studio (minSdk 24, targetSdk 36)
